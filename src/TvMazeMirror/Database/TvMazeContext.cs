@@ -3,7 +3,7 @@ using TvMazeMirror.Entities;
 
 namespace TvMazeMirror.Database;
 
-public class TvMazeContext : DbContext, ITvMazeContext {
+public class TvMazeContext : DbContext, ITvMazeContext, IUnitOfWork {
     public DbSet<Show> Shows => Set<Show>();
 
     public TvMazeContext(AppSettings appSettings)
