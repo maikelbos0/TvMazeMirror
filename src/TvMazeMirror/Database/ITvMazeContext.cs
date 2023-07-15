@@ -8,4 +8,5 @@ public interface ITvMazeContext {
     DbSet<ShowGenre> ShowGenres { get; }
 
     Show? FindShow(int id);
+    int GetHighestTvMazeId();
 }

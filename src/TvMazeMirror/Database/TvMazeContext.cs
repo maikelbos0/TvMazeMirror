@@ -25,4 +25,6 @@ public class TvMazeContext : DbContext, ITvMazeContext, IUnitOfWork {
     }
 
     public Show? FindShow(int id) => Shows.Include(show => show.Genres).SingleOrDefault(show => show.Id == id);
+
+    public int GetHighestTvMazeId() => Shows.OrderByDescending(show => show.TvMazeId).FirstOrDefault()?.TvMazeId ?? 0;
 }
