@@ -1,8 +1,7 @@
-
-
 using TvMazeMirror;
 using TvMazeMirror.CommandHandlers;
 using TvMazeMirror.Database;
+using TvMazeMirror.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var appSettings = builder.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>() ?? throw new InvalidOperationException($"Missing object '{nameof(AppSettings)}' in configuration");
@@ -23,6 +22,7 @@ builder.Services.AddSingleton(appSettings);
 builder.Services.AddScoped<IAddShowCommandHandler, AddShowCommandHandler>();
 builder.Services.AddScoped<IUpdateShowCommandHandler, UpdateShowCommandHandler>();
 builder.Services.AddScoped<IImportShowsCommandHandler, ImportShowsCommandHandler>();
+builder.Services.AddHostedService<ImportService>();
 
 var app = builder.Build();
 
