@@ -23,4 +23,6 @@ public class TvMazeContext : DbContext, ITvMazeContext, IUnitOfWork {
             builder.Property(genre => genre.Name).IsRequired();
         });
     }
+
+    public Show? FindShow(int id) => Shows.Include(show => show.Genres).SingleOrDefault(show => show.Id == id);
 }

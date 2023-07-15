@@ -8,10 +8,16 @@ namespace TvMazeMirror.Controllers {
     [ApiController]
     public class ShowController : ControllerBase {
         private readonly IAddShowCommandHandler addShowCommandHandler;
+        private readonly IUpdateShowCommandHandler updateShowCommandHandler;
         private readonly ILogger<ShowController> logger;
 
-        public ShowController(IAddShowCommandHandler addShowCommandHandler, ILogger<ShowController> logger) {
+        public ShowController(
+            IAddShowCommandHandler addShowCommandHandler, 
+            IUpdateShowCommandHandler updateShowCommandHandler,
+            ILogger<ShowController> logger
+        ) {
             this.addShowCommandHandler = addShowCommandHandler;
+            this.updateShowCommandHandler = updateShowCommandHandler;
             this.logger = logger;
         }
 
@@ -36,6 +42,38 @@ namespace TvMazeMirror.Controllers {
             catch (Exception ex) {
 
                 logger.LogError(ex, "Failed to add show {ShowName}", model.Name);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] ShowModel model) {
+            logger.LogInformation("Updating Show {ShowId}", id);
+
+            model.Id = id;
+
+            try {
+                var result = await updateShowCommandHandler.Execute(model);
+
+                if (result.IsValid) {
+                    logger.LogInformation("Updated Show {ShowId}", id);
+
+                    return Ok(result);
+                }
+                else if (!result.IsFound) {
+                    logger.LogInformation("Failed to update Show {ShowId} because it does not exist", id);
+
+                    return NotFound(result);
+                }
+                else {
+                    logger.LogWarning("Failed to update Show {ShowId} because of validation errors", id);
+
+                    return BadRequest(result);
+                }
+            }
+            catch (Exception ex) {
+
+                logger.LogError(ex, "Failed to update show {ShowId}", id);
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }

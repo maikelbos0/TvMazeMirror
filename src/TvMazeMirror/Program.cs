@@ -19,6 +19,7 @@ builder.Services.AddScoped<ITvMazeContext, TvMazeContext>(provider => provider.G
 builder.Services.AddScoped<IUnitOfWork, TvMazeContext>(provider => provider.GetRequiredService<TvMazeContext>());
 builder.Services.AddSingleton(builder.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>() ?? throw new InvalidOperationException($"Missing object '{nameof(AppSettings)}' in configuration"));
 builder.Services.AddScoped<IAddShowCommandHandler, AddShowCommandHandler>();
+builder.Services.AddScoped<IUpdateShowCommandHandler, UpdateShowCommandHandler>();
 
 var app = builder.Build();
 
