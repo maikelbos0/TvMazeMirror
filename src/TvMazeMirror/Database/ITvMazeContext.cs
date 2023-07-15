@@ -5,4 +5,5 @@ namespace TvMazeMirror.Database;
 
 public interface ITvMazeContext {
     DbSet<Show> Shows { get; }
+    DbSet<ShowGenre> ShowGenres { get; }
 }

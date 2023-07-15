@@ -5,19 +5,22 @@ namespace TvMazeMirror.Database;
 
 public class TvMazeContext : DbContext, ITvMazeContext, IUnitOfWork {
     public DbSet<Show> Shows => Set<Show>();
+    public DbSet<ShowGenre> ShowGenres => Set<ShowGenre>();
 
     public TvMazeContext(AppSettings appSettings)
-        : base(new DbContextOptionsBuilder<TvMazeContext>().UseSqlServer(appSettings.DatabaseConnectionString).Options) { }
+        : base(new DbContextOptionsBuilder<TvMazeContext>().UseSqlServer(appSettings.DatabaseConnectionString).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).Options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Show>(builder => {
-            builder.HasMany(show => show.Genres).WithOne();
+            builder.HasMany(show => show.Genres).WithOne().IsRequired();
 
             builder.Property(show => show.Name).IsRequired();
+        });
 
-            builder.ToTable(nameof(Shows));
+        modelBuilder.Entity<ShowGenre>(builder => {
+            builder.Property(genre => genre.Name).IsRequired();
         });
     }
 }
