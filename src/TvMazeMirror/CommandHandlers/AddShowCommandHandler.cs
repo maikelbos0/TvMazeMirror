@@ -13,14 +13,14 @@ public class AddShowCommandHandler : IAddShowCommandHandler {
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<CommandResult> Execute(ShowModel model) {
-        var commandResult = new CommandResult();
+    public async Task<ValueCommandResult> Execute(ShowModel model) {
+        var commandResult = new ValueCommandResult();
 
         if (string.IsNullOrWhiteSpace(model.Name)) {
             commandResult.AddError(nameof(ShowModel.Name), "Name is required");
         }
 
-        if (commandResult.IsSuccesful) {
+        if (commandResult.IsValid) {
             var show = new Show(model.Name!) {
                 Language = model.Language,
                 Premiered = model.Premiered,

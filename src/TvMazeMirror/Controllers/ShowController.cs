@@ -16,19 +16,26 @@ namespace TvMazeMirror.Controllers {
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add(ShowModel model) {
-            logger.LogInformation("Adding Show {Show}", model.Name);
+        public async Task<IActionResult> Add([FromBody] ShowModel model) {
+            logger.LogInformation("Adding Show {ShowName}", model.Name);
 
             try {
                 var result = await addShowCommandHandler.Execute(model);
 
-                logger.LogInformation("Added Show {Show} with id {ShowId}", model.Name, result.Value);
+                if (result.IsValid) {
+                    logger.LogInformation("Added Show {ShowName} with id {ShowId}", model.Name, result.Value);
 
-                return Ok(result);
+                    return Ok(result);
+                }
+                else {
+                    logger.LogWarning("Failed to add Show {ShowName} because of validation errors", model.Name);
+
+                    return BadRequest(result);
+                }
             }
             catch (Exception ex) {
 
-                logger.LogError(ex, "Failed to add show {Show}", model.Name);
+                logger.LogError(ex, "Failed to add show {ShowName}", model.Name);
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }

@@ -30,8 +30,6 @@ public class AddShowCommandHandlerTests {
             Name = name
         });
 
-        result.IsSuccesful.Should().BeFalse();
-
         var error = result.Errors.Should().ContainSingle().Subject;
         error.Property.Should().Be("Name");
         error.Message.Should().Be("Name is required");
@@ -52,8 +50,8 @@ public class AddShowCommandHandlerTests {
         };
 
         var result = await handler.Execute(model);
-        
-        result.IsSuccesful.Should().BeTrue();
+
+        result.IsValid.Should().BeTrue();
 
         context.Shows.Received().Add(Arg.Is<Show>(show => show.Name == model.Name
                                                        && show.Language == model.Language
