@@ -3,6 +3,10 @@
 namespace TvMazeMirror.Services;
 
 public class TvMazeClient : ITvMazeClient {
+    private readonly static JsonSerializerOptions jsonSerializerOptions = new() {
+         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+
     private readonly HttpClient httpClient;
 
     public TvMazeClient(HttpClient httpClient) {
@@ -22,6 +26,6 @@ public class TvMazeClient : ITvMazeClient {
 
         response.EnsureSuccessStatusCode();
 
-        return JsonSerializer.Deserialize<List<ShowDto>>(await response.Content.ReadAsStringAsync());
+        return JsonSerializer.Deserialize<List<ShowDto>>(await response.Content.ReadAsStringAsync(), jsonSerializerOptions);
     }
 }

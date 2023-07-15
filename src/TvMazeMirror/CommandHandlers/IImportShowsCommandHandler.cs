@@ -1,5 +1,5 @@
-﻿namespace TvMazeMirror.CommandHandlers; 
+﻿namespace TvMazeMirror.CommandHandlers;
 
 public interface IImportShowsCommandHandler {
-    Task<ValueCommandResult> Execute();
+    Task<ImportShowsCommandResult> Execute(int page);
 }

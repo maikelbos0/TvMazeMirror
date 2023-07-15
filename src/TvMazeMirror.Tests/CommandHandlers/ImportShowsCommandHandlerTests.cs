@@ -27,9 +27,10 @@ public class ImportShowsCommandHandlerTests {
     public async Task Execute_Does_Nothing_When_Rate_Limited() {
         client.GetShows(default).ReturnsForAnyArgs((IEnumerable<ShowDto>?)null);
 
-        var result = await handler.Execute();
+        var result = await handler.Execute(0);
 
-        result.Value.Should().BeNull();
+        result.IsRateLimited.Should().BeTrue();
+        result.Imported.Should().Be(0);
 
         context.Shows.DidNotReceiveWithAnyArgs().Add(default!);
         await unitOfWork.DidNotReceiveWithAnyArgs().SaveChangesAsync(default);
@@ -44,13 +45,15 @@ public class ImportShowsCommandHandlerTests {
     public async Task Execute_Calculates_Page_Correctly(int tvMazeId, int page) {
         context.GetHighestTvMazeId().Returns(tvMazeId);
 
-        _ = await handler.Execute();
+        _ = await handler.Execute(-1);
 
         await client.Received().GetShows(page);
     }
 
     [Fact]
     public async Task Execute_Imports_Shows() {
+        context.GetHighestTvMazeId().Returns(4);
+
         var showDto = new ShowDto() {
             Id = 5,
             Name = "De TV Show",
@@ -62,9 +65,10 @@ public class ImportShowsCommandHandlerTests {
 
         client.GetShows(default).ReturnsForAnyArgs(new List<ShowDto>() { showDto });
 
-        var result = await handler.Execute();
+        var result = await handler.Execute(0);
 
-        result.Value.Should().Be(1);
+        result.Downloaded.Should().Be(1);
+        result.Imported.Should().Be(1);
 
         context.Shows.Received().Add(Arg.Is<Show>(show => show.Name == showDto.Name
                                                        && show.Language == showDto.Language

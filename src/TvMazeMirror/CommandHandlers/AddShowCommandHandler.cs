@@ -13,8 +13,8 @@ public class AddShowCommandHandler : IAddShowCommandHandler {
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<ValueCommandResult> Execute(ShowModel model) {
-        var commandResult = new ValueCommandResult();
+    public async Task<AddShowCommandResult> Execute(ShowModel model) {
+        var commandResult = new AddShowCommandResult();
 
         if (string.IsNullOrWhiteSpace(model.Name)) {
             commandResult.AddError(nameof(ShowModel.Name), "Name is required");
@@ -31,7 +31,7 @@ public class AddShowCommandHandler : IAddShowCommandHandler {
             context.Shows.Add(show);
             await unitOfWork.SaveChangesAsync();
 
-            commandResult.Value = show.Id;
+            commandResult.Id = show.Id;
         }
 
         return commandResult;

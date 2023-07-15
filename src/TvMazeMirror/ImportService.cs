@@ -20,28 +20,33 @@ public class ImportService : BackgroundService {
     }
 
     private async Task RunScheduledTasks(CancellationToken cancellationToken) {
-        int? importedShows = null;
+        int page = 0;
 
-        while (!(cancellationToken.IsCancellationRequested || importedShows == 0)) {
+        while (!cancellationToken.IsCancellationRequested) {
             try {
                 using var scope = serviceScopeFactory.CreateScope();
+
                 var importShowsCommandHandler = scope.ServiceProvider.GetRequiredService<IImportShowsCommandHandler>();
+                var result = await importShowsCommandHandler.Execute(page);
 
-                importedShows = (await importShowsCommandHandler.Execute()).Value;
+                page = result.NextPage;
 
-                if (importedShows == null) {
+                if (result.IsRateLimited) {
                     logger.LogInformation("Rate limit reached; waiting for {RateLimitDelayInSeconds} seconds", rateLimitDelayInSeconds);
                     await Task.Delay(rateLimitDelayInSeconds * 1000, cancellationToken);
                 }
                 else {
-                    logger.LogInformation("Imported {ShowCount} shows", importedShows);
+                    logger.LogInformation("Imported {ShowCount} shows", result.Imported);
+                }
+
+                if (result.Downloaded == 0) {
+                    logger.LogInformation("Finished importing shows");
+                    return;
                 }
             }
             catch (Exception ex) {
                 logger.LogError(ex, "Failed to import shows");
             }
         }
-
-        logger.LogInformation("Finished importing shows");
     }
 }

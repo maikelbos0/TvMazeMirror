@@ -3,5 +3,5 @@
 namespace TvMazeMirror.CommandHandlers;
 
 public interface IAddShowCommandHandler {
-    Task<ValueCommandResult> Execute(ShowModel model);
+    Task<AddShowCommandResult> Execute(ShowModel model);
 }

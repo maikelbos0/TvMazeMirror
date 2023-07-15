@@ -17,26 +17,37 @@ public class ImportShowsCommandHandler : IImportShowsCommandHandler {
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<ValueCommandResult> Execute() {
-        var result = new ValueCommandResult();
-        var page = context.GetHighestTvMazeId() / showIdsPerPage;
-        var shows = await client.GetShows(page);
+    public async Task<ImportShowsCommandResult> Execute(int page) {
+        var result = new ImportShowsCommandResult();
+        var highestTvMazeId = context.GetHighestTvMazeId();
 
-        if (shows != null) {
-            foreach (var dto in shows) {
-                var show = new Show(dto.Name ?? "<unknown>") {
-                    TvMazeId = dto.Id,
-                    Language = dto.Language,
-                    Premiered = dto.Premiered,
-                    Summary = dto.Summary,
-                    Genres = dto.Genres.Select(genre => new ShowGenre(genre)).ToList()
+        page = Math.Max(page, highestTvMazeId / showIdsPerPage);
+        result.NextPage = page + 1;
+
+        var showDtos = await client.GetShows(page);
+
+        if (showDtos == null) {
+            result.IsRateLimited = true;
+        }
+        if (showDtos != null) {
+            var newShowDtos = showDtos.Where(dto => dto.Id > highestTvMazeId);
+
+            foreach (var newShowDto in newShowDtos) {
+                var show = new Show(newShowDto.Name ?? "<unknown>") {
+                    TvMazeId = newShowDto.Id,
+                    Language = newShowDto.Language,
+                    Premiered = newShowDto.Premiered,
+                    Summary = newShowDto.Summary,
+                    Genres = newShowDto.Genres.Select(genre => new ShowGenre(genre)).ToList()
                 };
 
-                context.Shows.AddRange(show);
+                context.Shows.Add(show);
             }
+
             await unitOfWork.SaveChangesAsync();
 
-            result.Value = shows.Count();
+            result.Imported = newShowDtos.Count();
+            result.Downloaded = showDtos.Count();
         }
 
         return result;

@@ -29,7 +29,7 @@ namespace TvMazeMirror.Controllers {
                 var result = await addShowCommandHandler.Execute(model);
 
                 if (result.IsValid) {
-                    logger.LogInformation("Added Show {ShowName} with id {ShowId}", model.Name, result.Value);
+                    logger.LogInformation("Added Show {ShowName} with id {ShowId}", model.Name, result.Id);
 
                     return Ok(result);
                 }
