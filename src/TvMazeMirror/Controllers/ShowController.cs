@@ -9,15 +9,18 @@ namespace TvMazeMirror.Controllers {
     public class ShowController : ControllerBase {
         private readonly IAddShowCommandHandler addShowCommandHandler;
         private readonly IUpdateShowCommandHandler updateShowCommandHandler;
+        private readonly IDeleteShowCommandHandler deleteShowCommandHandler;
         private readonly ILogger<ShowController> logger;
 
         public ShowController(
-            IAddShowCommandHandler addShowCommandHandler, 
+            IAddShowCommandHandler addShowCommandHandler,
             IUpdateShowCommandHandler updateShowCommandHandler,
+            IDeleteShowCommandHandler deleteShowCommandHandler,
             ILogger<ShowController> logger
         ) {
             this.addShowCommandHandler = addShowCommandHandler;
             this.updateShowCommandHandler = updateShowCommandHandler;
+            this.deleteShowCommandHandler = deleteShowCommandHandler;
             this.logger = logger;
         }
 
@@ -74,6 +77,36 @@ namespace TvMazeMirror.Controllers {
             catch (Exception ex) {
 
                 logger.LogError(ex, "Failed to update show {ShowId}", id);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id) {
+            logger.LogInformation("Deleting Show {ShowId}", id);
+
+            try {
+                var result = await deleteShowCommandHandler.Execute(id);
+
+                if (result.IsValid) {
+                    logger.LogInformation("Deleted Show {ShowId}", id);
+
+                    return Ok(result);
+                }
+                else if (!result.IsFound) {
+                    logger.LogInformation("Failed to delete Show {ShowId} because it does not exist", id);
+
+                    return NotFound(result);
+                }
+                else {
+                    logger.LogWarning("Failed to delete Show {ShowId} because of validation errors", id);
+
+                    return BadRequest(result);
+                }
+            }
+            catch (Exception ex) {
+
+                logger.LogError(ex, "Failed to delete show {ShowId}", id);
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }

@@ -22,6 +22,7 @@ builder.Services.AddSingleton(appSettings);
 builder.Services.AddScoped<IAddShowCommandHandler, AddShowCommandHandler>();
 builder.Services.AddScoped<IUpdateShowCommandHandler, UpdateShowCommandHandler>();
 builder.Services.AddScoped<IImportShowsCommandHandler, ImportShowsCommandHandler>();
+builder.Services.AddScoped<IDeleteShowCommandHandler, DeleteShowCommandHandler>();
 builder.Services.AddHostedService<ImportService>();
 
 var app = builder.Build();

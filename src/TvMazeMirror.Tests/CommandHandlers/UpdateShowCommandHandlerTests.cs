@@ -1,10 +1,8 @@
 ﻿using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using TvMazeMirror.CommandHandlers;
@@ -43,6 +41,7 @@ public class UpdateShowCommandHandlerTests {
 
     [Fact]
     public async Task Execute_Show_Must_Exist() {
+        context.FindShow(default).ReturnsForAnyArgs((Show?)null);
 
         var model = new ShowModel() {
             Name = "De TV Show",
