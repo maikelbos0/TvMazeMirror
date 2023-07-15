@@ -6,6 +6,7 @@ namespace TvMazeMirror.CommandHandlers;
 
 public class ImportShowsCommandHandler : IImportShowsCommandHandler {
     private const int showIdsPerPage = 250;
+    private readonly static DateTime premieredFrom = new(2014, 1, 1);
 
     private readonly ITvMazeClient client;
     private readonly ITvMazeContext context;
@@ -30,7 +31,7 @@ public class ImportShowsCommandHandler : IImportShowsCommandHandler {
             result.IsRateLimited = true;
         }
         if (showDtos != null) {
-            var newShowDtos = showDtos.Where(dto => dto.Id > highestTvMazeId);
+            var newShowDtos = showDtos.Where(dto => dto.Id > highestTvMazeId && dto.Premiered > premieredFrom);
 
             foreach (var newShowDto in newShowDtos) {
                 var show = new Show(newShowDto.Name ?? "<unknown>") {

@@ -58,8 +58,8 @@ public class ImportShowsCommandHandlerTests {
             Id = 5,
             Name = "De TV Show",
             Language = "Dutch",
-            Premiered = new DateTime(2035, 4, 15),
-            Summary = "Dit is een TV show, en ook best een leuke. We moeten er nog wel even op wachten!",
+            Premiered = new DateTime(2014, 1, 2),
+            Summary = "Dit is een TV show, en ook best een leuke.",
             Genres = new() { "Action", "Comedy" }
         };
 
@@ -69,6 +69,7 @@ public class ImportShowsCommandHandlerTests {
 
         result.Downloaded.Should().Be(1);
         result.Imported.Should().Be(1);
+        result.NextPage.Should().Be(1);
 
         context.Shows.Received().Add(Arg.Is<Show>(show => show.Name == showDto.Name
                                                        && show.Language == showDto.Language
@@ -76,6 +77,31 @@ public class ImportShowsCommandHandlerTests {
                                                        && show.Summary == showDto.Summary
                                                        && showDto.Genres.All(name => show.Genres.Any(genre => genre.Name == name))
                                                        && show.TvMazeId == showDto.Id));
+        await unitOfWork.Received().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Execute_Skips_Shows_Before_20140102() {
+        context.GetHighestTvMazeId().Returns(4);
+
+        var showDto = new ShowDto() {
+            Id = 5,
+            Name = "De TV Show",
+            Language = "Dutch",
+            Premiered = new DateTime(2014, 1, 1),
+            Summary = "Dit is een TV show, en ook best een leuke. Wel te oud helaas!",
+            Genres = new() { "Action", "Comedy" }
+        };
+
+        client.GetShows(default).ReturnsForAnyArgs(new List<ShowDto>() { showDto });
+
+        var result = await handler.Execute(0);
+
+        result.Downloaded.Should().Be(1);
+        result.Imported.Should().Be(0);
+        result.NextPage.Should().Be(1);
+
+        context.Shows.DidNotReceiveWithAnyArgs().Add(default!);
         await unitOfWork.Received().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }
